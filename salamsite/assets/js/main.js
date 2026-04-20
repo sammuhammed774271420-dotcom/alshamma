@@ -1,4 +1,4 @@
-// SALAM REAL ESTATE - MAIN JS
+// مخابز الشام للخبز العربي - MAIN JS
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -45,29 +45,106 @@ document.addEventListener('DOMContentLoaded', function () {
         let touchStartX = 0;
         const slider = document.querySelector('.hero-slider');
         if (slider) {
-            slider.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+            slider.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
             slider.addEventListener('touchend', e => {
                 const diff = touchStartX - e.changedTouches[0].screenX;
                 if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); resetSlider(); }
-            });
+            }, { passive: true });
         }
     }
 
-    // ===== MOBILE MENU =====
-    const menuBtn = document.getElementById('mobileMenuBtn');
-    const nav = document.getElementById('mainNav');
-    if (menuBtn && nav) {
-        menuBtn.addEventListener('click', () => {
-            nav.classList.toggle('open');
-            const icon = menuBtn.querySelector('i');
-            if (icon) { icon.classList.toggle('fa-bars'); icon.classList.toggle('fa-times'); }
-        });
-        document.addEventListener('click', (e) => {
-            if (!menuBtn.contains(e.target) && !nav.contains(e.target)) {
-                nav.classList.remove('open');
-            }
+    // ===== MOBILE MENU (Website) =====
+    const menuBtn    = document.getElementById('mobileMenuBtn');
+    const mainNav    = document.getElementById('mainNav');
+    const navOverlay = document.getElementById('navOverlay');
+
+    function openNav() {
+        if (!mainNav) return;
+        mainNav.classList.add('open');
+        if (navOverlay) navOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        const icon = menuBtn && menuBtn.querySelector('i');
+        if (icon) { icon.classList.remove('fa-bars'); icon.classList.add('fa-times'); }
+    }
+
+    function closeNav() {
+        if (!mainNav) return;
+        mainNav.classList.remove('open');
+        if (navOverlay) navOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+        const icon = menuBtn && menuBtn.querySelector('i');
+        if (icon) { icon.classList.remove('fa-times'); icon.classList.add('fa-bars'); }
+    }
+
+    if (menuBtn && mainNav) {
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            mainNav.classList.contains('open') ? closeNav() : openNav();
         });
     }
+
+    if (navOverlay) {
+        navOverlay.addEventListener('click', closeNav);
+    }
+
+    // Close nav on link click (mobile)
+    if (mainNav) {
+        mainNav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 900) closeNav();
+            });
+        });
+    }
+
+    // Close nav on ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeNav();
+            closeSidebar();
+        }
+    });
+
+    // ===== ADMIN SIDEBAR =====
+    const sidebarToggle  = document.getElementById('sidebarToggle');
+    const adminSidebar   = document.querySelector('.admin-sidebar');
+    const adminOverlay   = document.querySelector('.admin-overlay');
+
+    function openSidebar() {
+        if (!adminSidebar) return;
+        adminSidebar.classList.add('open');
+        if (adminOverlay) adminOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        const icon = sidebarToggle && sidebarToggle.querySelector('i');
+        if (icon) { icon.classList.remove('fa-bars'); icon.classList.add('fa-times'); }
+    }
+
+    function closeSidebar() {
+        if (!adminSidebar) return;
+        adminSidebar.classList.remove('open');
+        if (adminOverlay) adminOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+        const icon = sidebarToggle && sidebarToggle.querySelector('i');
+        if (icon) { icon.classList.remove('fa-times'); icon.classList.add('fa-bars'); }
+    }
+
+    if (sidebarToggle && adminSidebar) {
+        sidebarToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            adminSidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+        });
+    }
+
+    if (adminOverlay) {
+        adminOverlay.addEventListener('click', closeSidebar);
+    }
+
+    // Restore body scroll on resize (in case sidebar was open)
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 900) {
+            closeSidebar();
+            closeNav();
+        }
+    });
 
     // ===== SCROLL TO TOP =====
     const scrollBtn = document.getElementById('scrollTop');
@@ -179,7 +256,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var total       = cards.length;
         if (total === 0) return;
 
-        // كم بطاقة تُعرض في وقت واحد
         function visibleCount() {
             var w = window.innerWidth;
             if (w >= 1024) return 3;
@@ -192,9 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var autoTimer   = null;
         var isDragging  = false;
         var startX      = 0;
-        var scrollLeft  = 0;
 
-        // ── بناء النقاط ────────────────────────────────────────
         function buildDots() {
             if (!dotsWrap) return;
             dotsWrap.innerHTML = '';
@@ -213,18 +287,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // ── التحريك ────────────────────────────────────────────
         function goTo(n) {
             maxIndex = Math.max(0, total - visibleCount());
             current  = Math.max(0, Math.min(n, maxIndex));
-
-            // احسب عرض البطاقة + الفجوة
             var cardW   = cards[0].offsetWidth;
             var gap     = 20;
             var offset  = current * (cardW + gap);
             track.style.transform = 'translateX(' + offset + 'px)';
-
-            // نقاط
             if (dotsWrap) {
                 Array.from(dotsWrap.querySelectorAll('.offers-dot')).forEach(function (d, i) {
                     d.classList.toggle('active', i === current);
@@ -241,11 +310,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         function resetAuto() { clearInterval(autoTimer); startAuto(); }
 
-        // ── أزرار التنقل ────────────────────────────────────────
         if (btnPrev) btnPrev.addEventListener('click', function () { prev(); resetAuto(); });
         if (btnNext) btnNext.addEventListener('click', function () { next(); resetAuto(); });
 
-        // ── النقر على البطاقة ────────────────────────────────────
         cards.forEach(function (card) {
             card.addEventListener('click', function () {
                 if (!isDragging && this.dataset.link) {
@@ -254,19 +321,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // ── السحب باللمس (موبايل) ────────────────────────────────
         outer.addEventListener('touchstart', function (e) {
             startX = e.changedTouches[0].clientX;
         }, { passive: true });
         outer.addEventListener('touchend', function (e) {
             var diff = startX - e.changedTouches[0].clientX;
-            if (Math.abs(diff) > 40) {
-                diff > 0 ? next() : prev();
-                resetAuto();
-            }
+            if (Math.abs(diff) > 40) { diff > 0 ? next() : prev(); resetAuto(); }
         }, { passive: true });
 
-        // ── السحب بالماوس ────────────────────────────────────────
         outer.addEventListener('mousedown', function (e) {
             isDragging = false;
             startX = e.clientX;
@@ -277,24 +339,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         outer.addEventListener('mouseup', function (e) {
             var diff = startX - e.clientX;
-            if (isDragging && Math.abs(diff) > 40) {
-                diff > 0 ? next() : prev();
-                resetAuto();
-            }
+            if (isDragging && Math.abs(diff) > 40) { diff > 0 ? next() : prev(); resetAuto(); }
         });
 
-        // ── تهيئة + إعادة الحساب عند تغيير الحجم ─────────────────
-        function init() {
-            buildDots();
-            goTo(current);
-            startAuto();
-        }
-
+        function init() { buildDots(); goTo(current); startAuto(); }
         window.addEventListener('resize', function () {
             buildDots();
             goTo(Math.min(current, Math.max(0, total - visibleCount())));
         });
-
         init();
     })();
 
@@ -305,7 +357,8 @@ document.addEventListener('DOMContentLoaded', function () {
             area.addEventListener('click', () => input.click());
             input.addEventListener('change', function () {
                 if (this.files.length > 0) {
-                    area.querySelector('span') && (area.querySelector('span').textContent = this.files.length > 1 ? `تم اختيار ${this.files.length} صور` : this.files[0].name);
+                    const span = area.querySelector('span');
+                    if (span) span.textContent = this.files.length > 1 ? `تم اختيار ${this.files.length} صور` : this.files[0].name;
                 }
             });
         }

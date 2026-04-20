@@ -5,10 +5,10 @@
 // ════════════════════════════════════════════════════════════
 
 // ── بيانات InfinityFree MySQL ────────────────────────────────
-define('DB_HOST',     'sql101.infinityfree.com');
-define('DB_NAME',     'if0_41566500_db');
+define('DB_HOST',     'sql111.infinityfree.com');
+define('DB_NAME',     'if0_41703916_XXX');
 define('DB_USER',     'if0_41566500');
-define('DB_PASS',     '3seE3xFhEPk7');
+define('DB_PASS',     'tTc28C1uVB8RMlW');
 define('DB_CHARSET',  'utf8mb4');
 
 // ── مجلدات الرفع ────────────────────────────────────────────
@@ -406,10 +406,258 @@ if ((int)$pdo->query("SELECT COUNT(*) FROM home_sections")->fetchColumn() === 0)
     $st = $pdo->prepare("INSERT INTO home_sections (section_key,section_name,active) VALUES (?,?,?)");
     foreach ($secs as $s) { $st->execute($s); }
 } else {
-    // ضمان وجود سجل العروض في الجدول (للمستخدمين الحاليين)
     $exists = (int)$pdo->query("SELECT COUNT(*) FROM home_sections WHERE section_key='offers'")->fetchColumn();
     if (!$exists) {
         $pdo->prepare("INSERT INTO home_sections (section_key,section_name,active) VALUES (?,?,?)")
             ->execute(['offers','قسم العروض والصور الترويجية',1]);
     }
 }
+
+// ════════════════════════════════════════════════════════════
+//  جداول الموارد البشرية (HR)
+// ════════════════════════════════════════════════════════════
+if ($use_mysql) {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_employees (
+        id              INT AUTO_INCREMENT PRIMARY KEY,
+        emp_number      VARCHAR(50) UNIQUE NOT NULL,
+        name            VARCHAR(255) NOT NULL,
+        department      VARCHAR(100),
+        position        VARCHAR(100),
+        hire_date       DATE,
+        base_salary     DECIMAL(10,2) DEFAULT 0,
+        phone           VARCHAR(50),
+        national_id     VARCHAR(50),
+        notes           TEXT,
+        status          VARCHAR(20) DEFAULT 'active',
+        created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_attendance (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        emp_id      INT NOT NULL,
+        att_date    DATE NOT NULL,
+        status      VARCHAR(20) DEFAULT 'حضور',
+        notes       TEXT,
+        created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (emp_id) REFERENCES hr_employees(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_salaries (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        emp_id      INT NOT NULL,
+        month       VARCHAR(7) NOT NULL,
+        base_salary DECIMAL(10,2) DEFAULT 0,
+        additions   DECIMAL(10,2) DEFAULT 0,
+        deductions  DECIMAL(10,2) DEFAULT 0,
+        net_salary  DECIMAL(10,2) DEFAULT 0,
+        paid        INT DEFAULT 0,
+        notes       TEXT,
+        created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (emp_id) REFERENCES hr_employees(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_advances (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        emp_id      INT NOT NULL,
+        adv_date    DATE NOT NULL,
+        amount      DECIMAL(10,2) NOT NULL,
+        type        VARCHAR(20) DEFAULT 'سلفة',
+        description TEXT,
+        deducted    INT DEFAULT 0,
+        created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (emp_id) REFERENCES hr_employees(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_transactions (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        emp_id      INT NOT NULL,
+        trans_date  DATE NOT NULL,
+        type        VARCHAR(30) NOT NULL,
+        description TEXT,
+        debit       DECIMAL(10,2) DEFAULT 0,
+        credit      DECIMAL(10,2) DEFAULT 0,
+        balance     DECIMAL(10,2) DEFAULT 0,
+        ref_id      INT DEFAULT NULL,
+        created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (emp_id) REFERENCES hr_employees(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // جداول التوزيع
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dist_customers (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        cust_number VARCHAR(50) UNIQUE,
+        name        VARCHAR(255) NOT NULL,
+        type        VARCHAR(50) DEFAULT 'مطعم',
+        address     TEXT,
+        phone       VARCHAR(50),
+        contact_name VARCHAR(100),
+        notes       TEXT,
+        balance     DECIMAL(10,2) DEFAULT 0,
+        status      VARCHAR(20) DEFAULT 'active',
+        created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dist_products (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        name        VARCHAR(255) NOT NULL,
+        unit        VARCHAR(50) DEFAULT 'قطعة',
+        price       DECIMAL(10,3) DEFAULT 0,
+        description TEXT,
+        active      INT DEFAULT 1,
+        created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dist_receipts (
+        id           INT AUTO_INCREMENT PRIMARY KEY,
+        receipt_num  VARCHAR(50) UNIQUE NOT NULL,
+        cust_id      INT NOT NULL,
+        receipt_date DATE NOT NULL,
+        total_amount DECIMAL(10,3) DEFAULT 0,
+        notes        TEXT,
+        created_by   VARCHAR(100),
+        created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (cust_id) REFERENCES dist_customers(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dist_receipt_items (
+        id          INT AUTO_INCREMENT PRIMARY KEY,
+        receipt_id  INT NOT NULL,
+        product_id  INT NOT NULL,
+        quantity    DECIMAL(10,3) DEFAULT 0,
+        unit_price  DECIMAL(10,3) DEFAULT 0,
+        total       DECIMAL(10,3) DEFAULT 0,
+        FOREIGN KEY (receipt_id) REFERENCES dist_receipts(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES dist_products(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+} else {
+    // SQLite
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_employees (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        emp_number TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        department TEXT,
+        position TEXT,
+        hire_date TEXT,
+        base_salary REAL DEFAULT 0,
+        phone TEXT,
+        national_id TEXT,
+        notes TEXT,
+        status TEXT DEFAULT 'active',
+        created_at TEXT DEFAULT (datetime('now'))
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_attendance (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        emp_id INTEGER NOT NULL,
+        att_date TEXT NOT NULL,
+        status TEXT DEFAULT 'حضور',
+        notes TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (emp_id) REFERENCES hr_employees(id) ON DELETE CASCADE
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_salaries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        emp_id INTEGER NOT NULL,
+        month TEXT NOT NULL,
+        base_salary REAL DEFAULT 0,
+        additions REAL DEFAULT 0,
+        deductions REAL DEFAULT 0,
+        net_salary REAL DEFAULT 0,
+        paid INTEGER DEFAULT 0,
+        notes TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (emp_id) REFERENCES hr_employees(id) ON DELETE CASCADE
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_advances (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        emp_id INTEGER NOT NULL,
+        adv_date TEXT NOT NULL,
+        amount REAL NOT NULL,
+        type TEXT DEFAULT 'سلفة',
+        description TEXT,
+        deducted INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (emp_id) REFERENCES hr_employees(id) ON DELETE CASCADE
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS hr_transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        emp_id INTEGER NOT NULL,
+        trans_date TEXT NOT NULL,
+        type TEXT NOT NULL,
+        description TEXT,
+        debit REAL DEFAULT 0,
+        credit REAL DEFAULT 0,
+        balance REAL DEFAULT 0,
+        ref_id INTEGER DEFAULT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (emp_id) REFERENCES hr_employees(id) ON DELETE CASCADE
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dist_customers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cust_number TEXT UNIQUE,
+        name TEXT NOT NULL,
+        type TEXT DEFAULT 'مطعم',
+        address TEXT,
+        phone TEXT,
+        contact_name TEXT,
+        notes TEXT,
+        balance REAL DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        created_at TEXT DEFAULT (datetime('now'))
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dist_products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        unit TEXT DEFAULT 'قطعة',
+        price REAL DEFAULT 0,
+        description TEXT,
+        active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT (datetime('now'))
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dist_receipts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        receipt_num TEXT UNIQUE NOT NULL,
+        cust_id INTEGER NOT NULL,
+        receipt_date TEXT NOT NULL,
+        total_amount REAL DEFAULT 0,
+        notes TEXT,
+        created_by TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (cust_id) REFERENCES dist_customers(id) ON DELETE CASCADE
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dist_receipt_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        receipt_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        quantity REAL DEFAULT 0,
+        unit_price REAL DEFAULT 0,
+        total REAL DEFAULT 0,
+        FOREIGN KEY (receipt_id) REFERENCES dist_receipts(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES dist_products(id)
+    )");
+}
+
+// بيانات تجريبية للمنتجات
+if ((int)$pdo->query("SELECT COUNT(*) FROM dist_products")->fetchColumn() === 0) {
+    $prods = [
+        ['خبز عربي عادي',  'ربطة',  0.150, 'خبز عربي طازج - 10 قطع في الربطة'],
+        ['خبز عربي كبير',  'ربطة',  0.200, 'خبز عربي كبير الحجم - 8 قطع في الربطة'],
+        ['خبز تنور',       'قطعة',  0.050, 'خبز تنور طازج يومياً'],
+        ['خبز بالسمسم',    'ربطة',  0.250, 'خبز عربي بالسمسم - 10 قطع في الربطة'],
+    ];
+    $st = $pdo->prepare("INSERT INTO dist_products (name,unit,price,description) VALUES (?,?,?,?)");
+    foreach ($prods as $p) { $st->execute($p); }
+}
+
+// تحديث بيانات الموقع للمخبز
+$pdo->exec("UPDATE site_settings SET site_name='مخابز الشام للخبز العربي', tagline='جودة الخبز ... سر ثقة عملائنا', primary_color='#cc2020' WHERE id=1");
+$pdo->exec("UPDATE contact_info SET address='الأردن - عمان', phone='+962 7 9000 0000', email='info@maamil-alsham.com', whatsapp='+962 7 9000 0000', working_hours='السبت - الخميس: 4 صباحاً - 12 ظهراً' WHERE id=1");
+

@@ -36,35 +36,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
-body{background:linear-gradient(135deg,#1a1a1a 0%,#2f2410 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Cairo',sans-serif;direction:rtl;}
-.login-box{background:#fff;border-radius:10px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);}
-.login-header{background:#1a1a1a;padding:35px 30px;text-align:center;border-bottom:3px solid #b8963e;}
-.login-header .logo-ar{font-size:24px;font-weight:900;color:#b8963e;display:block;}
-.login-header .logo-en{font-size:9px;color:#666;letter-spacing:3px;}
-.login-header p{color:#aaa;font-size:13px;margin-top:8px;}
-.login-body{padding:35px 30px;}
-.login-body h2{font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:25px;text-align:center;}
+body{background:linear-gradient(135deg,#a01818 0%,#cc2020 50%,#7a0f0f 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Cairo',sans-serif;direction:rtl;}
+.login-box{background:#fff;border-radius:12px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+.login-header{background:linear-gradient(135deg,#a01818,#cc2020);padding:30px;text-align:center;border-bottom:3px solid #c9a227;}
+.login-header .bread-icon{font-size:40px;margin-bottom:8px;display:block;}
+.login-header .logo-ar{font-size:20px;font-weight:900;color:#fff;display:block;}
+.login-header .logo-en{font-size:10px;color:rgba(255,255,255,0.7);letter-spacing:2px;}
+.login-header p{color:rgba(255,255,255,0.8);font-size:13px;margin-top:8px;}
+.login-body{padding:30px;}
+.login-body h2{font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:22px;text-align:center;}
 .form-group{margin-bottom:18px;}
 .form-group label{display:block;font-size:13px;font-weight:700;color:#555;margin-bottom:7px;}
 .form-group .input-wrap{position:relative;}
-.form-group .input-wrap i{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#b8963e;}
-.form-group input{width:100%;padding:11px 38px 11px 14px;border:1px solid #e0d8c8;border-radius:5px;font-size:14px;font-family:'Cairo',sans-serif;background:#fafaf8;transition:all .3s;}
-.form-group input:focus{outline:none;border-color:#b8963e;box-shadow:0 0 0 3px rgba(184,150,62,.1);}
-.login-btn{width:100%;padding:14px;background:#b8963e;color:#1a1a1a;border:none;border-radius:5px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;transition:all .3s;}
-.login-btn:hover{background:#d4a847;transform:translateY(-1px);}
-.error-msg{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;padding:12px 15px;border-radius:5px;font-size:13px;margin-bottom:18px;text-align:center;}
-.login-hint{background:rgba(184,150,62,.05);border:1px solid rgba(184,150,62,.2);border-radius:5px;padding:12px 15px;font-size:12px;color:#888;text-align:center;margin-top:18px;}
-.login-hint strong{color:#b8963e;}
+.form-group .input-wrap i{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#cc2020;}
+.form-group input{width:100%;padding:11px 38px 11px 14px;border:1.5px solid #e0dada;border-radius:6px;font-size:14px;font-family:'Cairo',sans-serif;background:#fafafa;transition:all .3s;}
+.form-group input:focus{outline:none;border-color:#cc2020;box-shadow:0 0 0 3px rgba(204,32,32,.08);}
+.login-btn{width:100%;padding:14px;background:#cc2020;color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;transition:all .3s;}
+.login-btn:hover{background:#e03535;transform:translateY(-1px);}
+.error-msg{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:12px 15px;border-radius:6px;font-size:13px;margin-bottom:18px;text-align:center;}
+.login-hint{background:#fff8ef;border:1px solid #e5d4b0;border-radius:6px;padding:12px 15px;font-size:12px;color:#888;text-align:center;margin-top:18px;}
+.login-hint strong{color:#cc2020;}
 .back-link{display:block;text-align:center;margin-top:15px;font-size:13px;color:#888;}
-.back-link a{color:#b8963e;}
+.back-link a{color:#cc2020;}
 </style>
 </head>
 <body>
 <div class="login-box">
     <div class="login-header">
-        <span class="logo-ar">السلام للعقارات</span>
-        <span class="logo-en">AL-SALAM REAL ESTATE</span>
-        <p>لوحة إدارة الموقع</p>
+        <span class="bread-icon">🍞</span>
+        <span class="logo-ar">مخابز الشام للخبز العربي</span>
+        <span class="logo-en">MAAMIL AL SHAM</span>
+        <p>لوحة إدارة المخبز</p>
     </div>
     <div class="login-body">
         <h2>تسجيل الدخول</h2>
